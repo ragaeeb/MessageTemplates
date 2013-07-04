@@ -1,6 +1,6 @@
 APP_NAME = MessageTemplates
 
-INCLUDEPATH += ../src  ../../quazip/src/ ../../canadainc/src/
+INCLUDEPATH += ../../canadainc/src/
 LIBS += -lbbsystem -lbbpim -lbbutilityi18n -lbb
 CONFIG += qt warn_on cascades10
 
