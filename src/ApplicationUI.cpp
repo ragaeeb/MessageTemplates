@@ -4,6 +4,7 @@
 #include "AccountImporter.h"
 #include "InvocationUtils.h"
 #include "IOUtils.h"
+#include "Logger.h"
 #include "MessageImporter.h"
 
 namespace messagetemplates {
@@ -13,6 +14,8 @@ using namespace canadainc;
 
 ApplicationUI::ApplicationUI(bb::cascades::Application *app) : QObject(app), m_cover("Cover.qml")
 {
+	INIT_SETTING("onlyInbound", 1);
+
 	qmlRegisterType<canadainc::InvocationUtils>("com.canadainc.data", 1, 0, "InvocationUtils");
 
 	QmlDocument* qml = QmlDocument::create("asset:///main.qml").parent(this);
@@ -27,7 +30,7 @@ ApplicationUI::ApplicationUI(bb::cascades::Application *app) : QObject(app), m_c
 
 void ApplicationUI::loadAccounts()
 {
-	AccountImporter* ai = new AccountImporter("imapemail");
+	AccountImporter* ai = new AccountImporter();
 	connect( ai, SIGNAL( importCompleted(QVariantList const&) ), this, SIGNAL( accountsImported(QVariantList const&) ) );
 	IOUtils::startThread(ai);
 }
@@ -35,16 +38,11 @@ void ApplicationUI::loadAccounts()
 
 void ApplicationUI::loadMessages(qint64 accountId)
 {
-	MessageImporter* ai = new MessageImporter(accountId);
+	LOGGER("===== Load messages for" << accountId);
+	MessageImporter* ai = new MessageImporter( accountId, m_persistance.getValueFor("onlyInbound").toInt() == 1 );
 	connect( ai, SIGNAL( importCompleted(QVariantList const&) ), this, SIGNAL( messagesImported(QVariantList const&) ) );
 	connect( ai, SIGNAL( progress(int, int) ), this, SIGNAL( loadProgress(int, int) ) );
 	IOUtils::startThread(ai);
-}
-
-
-void ApplicationUI::processMessage(qint64 messageId)
-{
-
 }
 
 
