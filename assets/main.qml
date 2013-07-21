@@ -30,6 +30,19 @@ NavigationPane
                 navigationPane.push(helpPage);
             }
         }
+        
+        settingsAction: SettingsActionItem {
+            property Page settingsPage
+            
+            onTriggered: {
+                if (! settingsPage) {
+                    definition.source = "SettingsPage.qml"
+                    settingsPage = definition.createObject()
+                }
+                
+                navigationPane.push(settingsPage);
+            }
+        }
     }
     
     BasePage
@@ -86,13 +99,22 @@ NavigationPane
                     id: adm
                 }
                 
-                leadingVisual: DropDown {
+                leadingVisual: DropDown
+                {
                     id: accountChoice
                     title: qsTr("Account") + Retranslate.onLanguageChanged
                     
                     onSelectedValueChanged: {
                         persist.saveValueFor("accountId", selectedValue);
+                        reloadMessages();
+                    }
+                    
+                    function reloadMessages() {
                         app.loadMessages(selectedValue);
+                    }
+                    
+                    onCreationCompleted: {
+                        persist.settingChanged.connect(reloadMessages);
                     }
                 }
                 
@@ -174,9 +196,16 @@ NavigationPane
             }
         }
         
-        function onMessagesImported(results) {
+        function onMessagesImported(results)
+        {
             adm.clear();
-            adm.append(results);
+            
+            if (results.length > 0) {
+                adm.append(results);   
+            } else {
+                listView.scrollToPosition(0, ScrollAnimation.None);
+                listView.scroll(-100, ScrollAnimation.Smooth);
+            }
         }
         
         attachedObjects: [

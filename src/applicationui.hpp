@@ -36,7 +36,6 @@ public:
 
     Q_INVOKABLE void loadAccounts();
     Q_INVOKABLE void loadMessages(qint64 accountId);
-    Q_INVOKABLE void processMessage(qint64 messageId);
 };
 
 } // salat

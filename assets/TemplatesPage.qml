@@ -4,7 +4,7 @@ import com.canadainc.data 1.0
 
 BasePage
 {
-    property int accountId
+    property variant accountId
     property variant message
     
     actions: [
@@ -115,10 +115,17 @@ BasePage
             onTriggered: {
                 var data = dataModel.data(indexPath);
 
-                invoker.replyToMessage(accountId, message, data.message);
+                if (accountId == 23) {
+                    invoker.replyToSMS(message.senderAddress, data.message);
+                } else {
+                    persist.copyToClipboard(data.message, false);
+                    persist.showBlockingToast( qsTr("Template has been copied to the clipboard! Please press-and-hold on an empty space and choose to Paste your message."), qsTr("OK") );
+                    invoker.replyToMessage(accountId, message.id);   
+                }
             }
 
-            function onSettingChanged(key) {
+            function onSettingChanged(key)
+            {
                 if (key == "templates") {
                     adm.clear();
                     var templates = persist.getValueFor("templates");
