@@ -2,7 +2,7 @@ import bb.cascades 1.0
 import bb.system 1.0
 import com.canadainc.data 1.0
 
-BasePage
+Page
 {
     property variant accountId
     property variant message
@@ -52,10 +52,15 @@ BasePage
             ]
         }
     ]
+    
+    titleBar: LeftLogoTitleBar {}
 
-    contentContainer: Container
+    Container
     {
         leftPadding: 10; rightPadding: 10; topPadding: 10
+        horizontalAlignment: HorizontalAlignment.Fill
+        verticalAlignment: VerticalAlignment.Fill
+        
         
         Label {
             id: instruction
