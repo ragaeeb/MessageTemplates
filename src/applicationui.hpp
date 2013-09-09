@@ -25,10 +25,14 @@ class ApplicationUI : public QObject
 
     ApplicationUI(bb::cascades::Application* app);
 
+private slots:
+	void init();
+
 signals:
 	void accountsImported(QVariantList const& qvl);
 	void messagesImported(QVariantList const& qvl);
 	void loadProgress(int current, int total);
+	void initialize();
 
 public:
 	static void create(bb::cascades::Application* app);
