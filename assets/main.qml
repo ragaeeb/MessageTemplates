@@ -18,19 +18,14 @@ NavigationPane
         projectName: "message-templates"
     }
     
-    BasePage
+    Page
     {
-        contentContainer: Container
+        titleBar: LeftLogoTitleBar {}
+        
+        Container
         {
-            topPadding: 10;
-            
-            Label {
-                id: instructions
-                horizontalAlignment: HorizontalAlignment.Fill
-                textStyle.fontSize: FontSize.XXSmall
-                textStyle.textAlign: TextAlign.Center
-                multiline: true
-            }
+            horizontalAlignment: HorizontalAlignment.Fill
+            verticalAlignment: VerticalAlignment.Fill
 
             ProgressDelegate
             {
@@ -39,11 +34,6 @@ NavigationPane
                 onCreationCompleted: {
                     app.loadProgress.connect(onProgressChanged);
                 }
-            }
-
-            Divider {
-                id: divider
-                topMargin: 0; bottomMargin: 0;
             }
             
             ListView {
@@ -59,12 +49,6 @@ NavigationPane
                     id: accountChoice
                     
                     onAccountsLoaded: {
-                        if (numAccounts == 0) {
-                            instructions.text = qsTr("No accounts found. Are you sure you gave the app the permissions it needs?");
-                        } else {
-                            divider.visible = false;
-                        }
-                        
                         listView.scrollToPosition(0, ScrollAnimation.None);
                         listView.scroll(-100, ScrollAnimation.Smooth);
                     }

@@ -1,9 +1,13 @@
 import bb.cascades 1.0
 
-BasePage
+Page
 {
-    contentContainer: Container
+    titleBar: LeftLogoTitleBar {}
+    
+    Container
     {
+        horizontalAlignment: HorizontalAlignment.Fill
+        verticalAlignment: VerticalAlignment.Fill
         leftPadding: 20
         topPadding: 20
         rightPadding: 20
@@ -21,10 +25,6 @@ BasePage
         		} else {
         		    infoText.text = qsTr("Both inbound and outbound messages will be shown.")
         		}
-            }
-            
-            layoutProperties: StackLayoutProperties {
-                spaceQuota: 1
             }
         }
         

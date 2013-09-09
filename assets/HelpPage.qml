@@ -1,7 +1,7 @@
 import bb.cascades 1.0
 import bb 1.0
 
-BasePage
+Page
 {
     attachedObjects: [
         ApplicationInfo {
@@ -12,12 +12,14 @@ BasePage
             id: packageInfo
         }
     ]
+    
+    titleBar: LeftLogoTitleBar {}
 
-    contentContainer: Container
+    Container
     {
         leftPadding: 20; rightPadding: 20;
 
-        horizontalAlignment: HorizontalAlignment.Center
+        horizontalAlignment: HorizontalAlignment.Fill
         verticalAlignment: VerticalAlignment.Fill
 
         ScrollView {
