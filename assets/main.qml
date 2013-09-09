@@ -47,6 +47,7 @@ NavigationPane
                 leadingVisual: AccountsDropDown
                 {
                     id: accountChoice
+                    selectedAccountId: persist.getValueFor("accountId")
                     
                     onAccountsLoaded: {
                         listView.scrollToPosition(0, ScrollAnimation.None);
@@ -55,11 +56,14 @@ NavigationPane
                     
                     onSelectedValueChanged: {
                         persist.saveValueFor("accountId", selectedValue);
-                        reloadMessages();
+                        reloadMessages("onlyInbound");
                     }
                     
-                    function reloadMessages() {
-                        app.loadMessages(selectedValue);
+                    function reloadMessages(key)
+                    {
+                        if (key == "onlyInbound") {
+                            app.loadMessages(selectedValue);
+                        }
                     }
                     
                     onCreationCompleted: {
@@ -114,13 +118,19 @@ NavigationPane
         function onMessagesImported(results)
         {
             adm.clear();
+            adm.append(results);
             
-            if (results.length > 0) {
-                adm.append(results);   
-            } else {
-                listView.scrollToPosition(0, ScrollAnimation.None);
-                listView.scroll(-100, ScrollAnimation.Smooth);
+            if (results.length == 0)
+            {
+                if ( persist.getValueFor("onlyInbound") == 1 ) {
+                    persist.showToast( qsTr("No messages found for this account. We are only showing inbound messages. If you would like to show all messages, swipe-down from the top-bezel go to Settings and turn off the 'Show Only Inbound Messages' setting."), qsTr("OK") );
+                } else {
+                    persist.showToast( qsTr("No messages found for this account."), qsTr("OK") );
+                }
             }
+            
+            listView.scrollToPosition(0, ScrollAnimation.None);
+            listView.scroll(-100, ScrollAnimation.Smooth);
         }
     }
 }
