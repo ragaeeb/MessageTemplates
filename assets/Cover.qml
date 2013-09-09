@@ -11,7 +11,7 @@ Container
     attachedObjects: [
         ImagePaintDefinition {
             id: back
-            imageSource: "asset:///images/cover_bg.png"
+            imageSource: "images/cover_bg.png"
         }
     ]
 
@@ -20,7 +20,7 @@ Container
         horizontalAlignment: HorizontalAlignment.Center
 
         ImageView {
-            imageSource: "asset:///images/logo.png"
+            imageSource: "images/logo.png"
             horizontalAlignment: HorizontalAlignment.Center
         }
 
