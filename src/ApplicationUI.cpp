@@ -6,6 +6,8 @@
 #include "IOUtils.h"
 #include "Logger.h"
 #include "MessageImporter.h"
+#include "MessageManager.h"
+#include "PimUtil.h"
 
 namespace messagetemplates {
 
@@ -16,18 +18,66 @@ ApplicationUI::ApplicationUI(bb::cascades::Application *app) : QObject(app), m_c
 {
 	INIT_SETTING("onlyInbound", 1);
 
-	qmlRegisterType<canadainc::InvocationUtils>("com.canadainc.data", 1, 0, "InvocationUtils");
+	switch ( m_invokeManager.startupMode() )
+	{
+	case ApplicationStartupMode::InvokeCard:
+		connect( &m_invokeManager, SIGNAL( invoked(bb::system::InvokeRequest const&) ), this, SLOT( invoked(bb::system::InvokeRequest const&) ) );
+		connect( &m_invokeManager, SIGNAL( childCardDone(bb::system::CardDoneMessage const&) ), this, SLOT( childCardDone(bb::system::CardDoneMessage const&) ) );
+		break;
 
-	QmlDocument* qml = QmlDocument::create("asset:///main.qml").parent(this);
+	default:
+		initRoot();
+		break;
+	}
+}
+
+
+QObject* ApplicationUI::initRoot(QString const& qmlSource, bool invoked)
+{
+	QmlDocument* qml = QmlDocument::create("asset:///"+qmlSource).parent(this);
     qml->setContextProperty("app", this);
     qml->setContextProperty("persist", &m_persistance);
     qml->setContextProperty("localizer", &m_locale);
 
-    AbstractPane* root = qml->createRootObject<AbstractPane>();
-    app->setScene(root);
+    AbstractPane* root;
+
+    if (invoked) {
+    	Page* r = qml->createRootObject<Page>();
+    	NavigationPane* np = NavigationPane::create().backButtons(true);
+    	np->push(r);
+    	Application::instance()->setScene(np);
+
+    	root = r;
+    } else {
+        root = qml->createRootObject<AbstractPane>();
+        Application::instance()->setScene(root);
+    }
 
 	connect( this, SIGNAL( initialize() ), this, SLOT( init() ), Qt::QueuedConnection ); // async startup
 	emit initialize();
+
+	return root;
+}
+
+
+void ApplicationUI::invoked(bb::system::InvokeRequest const& request)
+{
+	QStringList tokens = request.uri().toString().split(":");
+    LOGGER("========= INVOKED DATA" << tokens);
+
+    if ( tokens.size() > 3 ) {
+    	QObject* root = initRoot("TemplatesPage.qml", true);
+    	qint64 accountId = tokens[2].toLongLong();
+    	QString messageId = tokens[3];
+
+    	QVariantMap map;
+    	map["id"] = messageId;
+
+    	root->setProperty("accountId", accountId);
+    	root->setProperty("message", map);
+    } else {
+    	initRoot();
+    }
 }
 
 
@@ -52,6 +102,25 @@ void ApplicationUI::loadMessages(qint64 accountId)
 	connect( ai, SIGNAL( importCompleted(QVariantList const&) ), this, SIGNAL( messagesImported(QVariantList const&) ) );
 	connect( ai, SIGNAL( progress(int, int) ), this, SIGNAL( loadProgress(int, int) ) );
 	IOUtils::startThread(ai);
+}
+
+
+void ApplicationUI::processReply(qint64 accountId, QVariantMap const& message, QString const& templateBody)
+{
+	if (accountId == MessageManager::account_key_sms) {
+		PimUtil::replyToSMS( message.value("senderAddress").toString(), templateBody, m_invokeManager );
+	} else {
+        m_persistance.copyToClipboard(templateBody, false);
+        m_persistance.showBlockingToast( tr("Template has been copied to the clipboard! Please press-and-hold on an empty space and choose to Paste your message."), tr("OK") );
+		InvocationUtils::replyToMessage( accountId, message.value("id").toString(), m_invokeManager );
+	}
+}
+
+
+void ApplicationUI::childCardDone(bb::system::CardDoneMessage const& message)
+{
+	m_invokeManager.sendCardDone(message);
+	//exit(0);
 }
 
 

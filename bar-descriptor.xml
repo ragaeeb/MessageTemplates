@@ -155,6 +155,15 @@
     <asset path="../canadainc/assets/SliderPair.qml">assets/SliderPair.qml</asset>
     <asset path="../canadainc/assets/SettingPair.qml">assets/SettingPair.qml</asset>
     
+	<invoke-target id="com.canadainc.MessageTemplates.reply">        
+		<invoke-target-type>card.composer</invoke-target-type>
+		<filter>
+			<action>bb.action.SHARE</action>
+			<mime-type>message/rfc822</mime-type>
+			<property var="uris" value="pim:"/>
+		</filter>
+	</invoke-target>
+
     <!-- Request permission to execute native code.  Required for native applications. -->
     <permission system="true">run_native</permission>
     <permission>access_pimdomain_messages</permission>

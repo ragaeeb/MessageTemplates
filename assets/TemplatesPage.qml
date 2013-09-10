@@ -1,6 +1,5 @@
 import bb.cascades 1.0
 import bb.system 1.0
-import com.canadainc.data 1.0
 
 Page
 {
@@ -119,14 +118,7 @@ Page
 
             onTriggered: {
                 var data = dataModel.data(indexPath);
-
-                if (accountId == 23) {
-                    invoker.replyToSMS(message.senderAddress, data.message);
-                } else {
-                    persist.copyToClipboard(data.message, false);
-                    persist.showBlockingToast( qsTr("Template has been copied to the clipboard! Please press-and-hold on an empty space and choose to Paste your message."), qsTr("OK") );
-                    invoker.replyToMessage(accountId, message.id);   
-                }
+                app.processReply(accountId, message, data.message);
             }
 
             function onSettingChanged(key)
@@ -150,12 +142,6 @@ Page
                 onSettingChanged("templates");
                 persist.settingChanged.connect(onSettingChanged);
             }
-            
-            attachedObjects: [
-                InvocationUtils {
-                    id: invoker
-                }
-            ]
         }
     }
 }
