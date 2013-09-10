@@ -5,6 +5,8 @@
 #include "LocaleUtil.h"
 #include "Persistance.h"
 
+#include <bb/system/InvokeManager>
+
 namespace bb {
 	namespace cascades {
 		class Application;
@@ -19,14 +21,17 @@ class ApplicationUI : public QObject
 {
 	Q_OBJECT
 
+	bb::system::InvokeManager m_invokeManager;
 	LocaleUtil m_locale;
     Persistance m_persistance;
 	LazySceneCover m_cover;
 
     ApplicationUI(bb::cascades::Application* app);
+    QObject* initRoot(QString const& qml="main.qml", bool invoked=false);
 
 private slots:
 	void init();
+	void invoked(bb::system::InvokeRequest const& request);
 
 signals:
 	void accountsImported(QVariantList const& qvl);
@@ -38,8 +43,10 @@ public:
 	static void create(bb::cascades::Application* app);
     virtual ~ApplicationUI();
 
-    Q_INVOKABLE void loadAccounts();
+    Q_SLOT void loadAccounts();
     Q_INVOKABLE void loadMessages(qint64 accountId);
+    Q_SLOT void childCardDone(bb::system::CardDoneMessage const& message=bb::system::CardDoneMessage());
+    Q_INVOKABLE void processReply(qint64 accountId, QVariantMap const& message, QString const& templateBody);
 };
 
 } // salat
