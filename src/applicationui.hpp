@@ -25,12 +25,14 @@ class ApplicationUI : public QObject
 	LocaleUtil m_locale;
     Persistance m_persistance;
 	LazySceneCover m_cover;
+	bb::system::InvokeRequest m_request;
+	QObject* m_root;
 
     ApplicationUI(bb::cascades::Application* app);
-    QObject* initRoot(QString const& qml="main.qml", bool invoked=false);
+    QObject* initRoot(QString const& qml);
 
 private slots:
-	void init();
+	void lazyInit();
 	void invoked(bb::system::InvokeRequest const& request);
 
 signals:
