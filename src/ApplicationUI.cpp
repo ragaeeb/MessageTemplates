@@ -17,6 +17,8 @@ using namespace canadainc;
 ApplicationUI::ApplicationUI(bb::cascades::Application *app) : QObject(app), m_cover("Cover.qml")
 {
 	INIT_SETTING("onlyInbound", 1);
+    INIT_SETTING(CARD_KEY, true);
+    INIT_SETTING(UI_KEY, true);
 
 	switch ( m_invokeManager.startupMode() )
 	{
