@@ -52,7 +52,94 @@ Page
         }
     ]
     
-    titleBar: LeftLogoTitleBar {}
+    titleBar: TitleBar
+    {
+        kind: TitleBarKind.FreeForm
+        kindProperties: FreeFormTitleBarKindProperties
+        {
+            Container
+            {
+                id: titleBar
+                background: titleBack.imagePaint
+                leftPadding: 50
+                horizontalAlignment: HorizontalAlignment.Fill
+                
+                layout: StackLayout {
+                    orientation: LayoutOrientation.LeftToRight
+                }
+                
+                ImageView
+                {
+                    imageSource: "images/title/logo.png"
+                    topMargin: 0
+                    leftMargin: 0
+                    rightMargin: 0
+                    bottomMargin: 0
+                    loadEffect: ImageViewLoadEffect.FadeZoom
+                    verticalAlignment: VerticalAlignment.Center
+                    opacity: 0
+                    
+                    animations: [
+                        FadeTransition {
+                            id: fadeInLogo
+                            easingCurve: StockCurve.CubicOut
+                            fromOpacity: 0
+                            toOpacity: 1
+                            duration: 1000
+                            
+                            onCreationCompleted: {
+                                //play();
+                            }
+                        }
+                    ]
+                }
+                
+                ImageView
+                {
+                    imageSource: "images/title/title_text.png"
+                    topMargin: 0
+                    leftMargin: 10
+                    rightMargin: 0
+                    bottomMargin: 0
+                    loadEffect: ImageViewLoadEffect.FadeZoom
+                    verticalAlignment: VerticalAlignment.Center
+                    translationX: -100
+                    
+                    animations: [
+                        TranslateTransition
+                        {
+                            id: tt
+                            duration: 1000
+                            fromX: -100
+                            toX: 0
+                            easingCurve: StockCurve.QuinticOut
+                            
+                            onCreationCompleted: {
+                                //play();
+                            }
+                        }
+                    ]
+                }
+                
+                attachedObjects: [
+                    ImagePaintDefinition {
+                        id: titleBack
+                        imageSource: "images/title/title_bg.png"
+                    }
+                ]
+            }
+        }
+        
+        function onSceneChanged(scene)
+        {
+            fadeInLogo.play();
+            tt.play();
+        }
+        
+        onCreationCompleted: {
+            Application.sceneChanged.connect(onSceneChanged);
+        }
+    }
 
     Container
     {

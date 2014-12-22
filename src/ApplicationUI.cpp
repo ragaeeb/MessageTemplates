@@ -2,11 +2,14 @@
 
 #include "applicationui.hpp"
 #include "AccountImporter.h"
+#include "AppLogFetcher.h"
+#include "CardUtils.h"
 #include "InvocationUtils.h"
 #include "IOUtils.h"
 #include "Logger.h"
+#include "LogMonitor.h"
 #include "MessageImporter.h"
-#include "MessageManager.h"
+#include "MessageTemplatesCollector.h"
 #include "PimUtil.h"
 
 namespace messagetemplates {
@@ -14,9 +17,9 @@ namespace messagetemplates {
 using namespace bb::cascades;
 using namespace canadainc;
 
-ApplicationUI::ApplicationUI(bb::cascades::Application *app) : QObject(app), m_cover("Cover.qml"), m_root(NULL)
+ApplicationUI::ApplicationUI(bb::cascades::Application *app) :
+        QObject(app), m_importer(NULL), m_cover("Cover.qml"), m_root(NULL)
 {
-	INIT_SETTING("onlyInbound", 1);
     INIT_SETTING(CARD_KEY, true);
     INIT_SETTING(UI_KEY, true);
 
@@ -24,7 +27,7 @@ ApplicationUI::ApplicationUI(bb::cascades::Application *app) : QObject(app), m_c
 	{
     case ApplicationStartupMode::LaunchApplication:
         LogMonitor::create(UI_KEY, UI_LOG_FILE, this);
-        init("main.qml");
+        initRoot("main.qml");
         break;
 
 	case ApplicationStartupMode::InvokeCard:
@@ -39,7 +42,6 @@ ApplicationUI::ApplicationUI(bb::cascades::Application *app) : QObject(app), m_c
 
 	default:
 	    break;
-		break;
 	}
 }
 
@@ -50,19 +52,19 @@ void ApplicationUI::invoked(bb::system::InvokeRequest const& request)
 
     QMap<QString,QString> targetToQML;
 
-    QString qml = targetToQML.value(target);
+    QString qml = targetToQML.value( request.target() );
 
     if ( qml.isNull() ) {
         qml = "TemplatesPage.qml";
     }
 
-    init(qml);
+    initRoot(qml);
 
     m_request = request;
 }
 
 
-QObject* ApplicationUI::initRoot(QString const& qmlSource)
+void ApplicationUI::initRoot(QString const& qmlDoc)
 {
     QMap<QString, QObject*> context;
     context.insert("localizer", &m_locale);
@@ -70,30 +72,43 @@ QObject* ApplicationUI::initRoot(QString const& qmlSource)
     LOGGER("Instantiate" << qmlDoc);
     m_root = CardUtils::initAppropriate(qmlDoc, context, this);
     emit initialize();
+}
 
-	return root;
+
+void ApplicationUI::terminateThreads()
+{
+    if (m_importer) {
+        m_importer->cancel();
+    }
 }
 
 
 void ApplicationUI::lazyInit()
 {
+    INIT_SETTING("onlyInbound", 1);
+
+    connect( Application::instance(), SIGNAL( aboutToQuit() ), this, SLOT( terminateThreads() ) );
+
+    AppLogFetcher::create( &m_persistance, new MessageTemplatesCollector(), this );
+
     if ( !Persistance::hasEmailSmsAccess() ) {
-        m_persist.showToast( tr("Warning: It seems like the app does not have access to your Email/SMS messages Folder. This permission is needed for the app to access the SMS and email services it needs to validatebe able to reply to them via templates. If you leave this permission off, some features may not work properly. Select OK to launch the Application Permissions screen where you can turn these settings on.") );
+        //m_persist.showToast( tr("Warning: It seems like the app does not have access to your Email/SMS messages Folder. This permission is needed for the app to access the SMS and email services it needs to validatebe able to reply to them via templates. If you leave this permission off, some features may not work properly. Select OK to launch the Application Permissions screen where you can turn these settings on.") );
     }
 
+    qint64 accountId = 0;
+    QString messageId = QString::number( PimUtil::extractIdsFromInvoke( m_request.uri().toString(), m_request.data(), accountId ) );
     QStringList tokens = m_request.uri().toString().split(":");
 
-    if ( tokens.size() > 3 )
+    if ( accountId && !messageId.isNull() )
     {
-        qint64 accountId = tokens[2].toLongLong();
-        QString messageId = tokens[3];
-
         QVariantMap map;
         map["id"] = messageId;
 
         m_root->setProperty("accountId", accountId);
         m_root->setProperty("message", map);
     }
+
+    emit lazyInitComplete();
 }
 
 
@@ -107,17 +122,28 @@ void ApplicationUI::loadAccounts()
 
 void ApplicationUI::loadMessages(qint64 accountId)
 {
-	LOGGER("Load messages for" << accountId);
-	MessageImporter* ai = new MessageImporter( accountId, m_persistance.getValueFor("onlyInbound").toInt() == 1 );
-	connect( ai, SIGNAL( importCompleted(QVariantList const&) ), this, SIGNAL( messagesImported(QVariantList const&) ) );
-	connect( ai, SIGNAL( progress(int, int) ), this, SIGNAL( loadProgress(int, int) ) );
-	IOUtils::startThread(ai);
+	LOGGER(accountId);
+
+	terminateThreads();
+
+	m_importer = new MessageImporter( accountId, m_persistance.getValueFor("onlyInbound").toInt() == 1 );
+	connect( m_importer, SIGNAL( importCompleted(QVariantList const&) ), this, SIGNAL( messagesImported(QVariantList const&) ) );
+	connect( m_importer, SIGNAL( progress(int, int) ), this, SIGNAL( loadProgress(int, int) ) );
+
+	IOUtils::startThread(m_importer);
+}
+
+
+void ApplicationUI::onMessagesImported(QVariantList const& qvl)
+{
+    emit messagesImported(qvl);
+    m_importer = NULL;
 }
 
 
 void ApplicationUI::processReply(qint64 accountId, QVariantMap const& message, QString const& templateBody)
 {
-	if (accountId == MessageManager::account_key_sms) {
+	if (accountId == ACCOUNT_KEY_SMS) {
 		PimUtil::replyToSMS( message.value("senderAddress").toString(), templateBody, m_invokeManager );
 	} else {
         m_persistance.copyToClipboard(templateBody, false);

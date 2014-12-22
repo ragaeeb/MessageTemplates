@@ -1,17 +1,25 @@
 APP_NAME = MessageTemplates
 
-INCLUDEPATH += ../../canadainc/src/
-LIBS += -lbbsystem -lbbpim -lbbutilityi18n -lbb
 CONFIG += qt warn_on cascades10
+
+INCLUDEPATH += ../../canadainc/src/
+INCLUDEPATH += ../../quazip/src/
+
+LIBS += -lbbsystem -lbbpim -lbbutilityi18n -lbb -lbbdata -lbbdevice -lbbplatform
+LIBS += -lz
+
+QT += network
 
 CONFIG(release, debug|release) {
     DESTDIR = o.le-v7
     LIBS += -L../../canadainc/arm/o.le-v7 -lcanadainc -Bdynamic
+    LIBS += -Bstatic -L../../quazip/arm/o.le-v7 -lquazip -Bdynamic
 }
 
 CONFIG(debug, debug|release) {
     DESTDIR = o.le-v7-g
     LIBS += -L../../canadainc/arm/o.le-v7-g -lcanadainc -Bdynamic
+    LIBS += -Bstatic -L../../quazip/arm/o.le-v7-g -lquazip -Bdynamic
 }
 
 include(config.pri)
