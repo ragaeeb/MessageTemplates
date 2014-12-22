@@ -2,7 +2,9 @@ import bb.cascades 1.0
 
 Page
 {
-    titleBar: LeftLogoTitleBar {}
+    titleBar: TitleBar {
+        title: qsTr("Settings") + Retranslate.onLanguageChanged
+    }
     
     Container
     {
@@ -13,18 +15,18 @@ Page
         rightPadding: 20
         bottomPadding: 20
         
-        SettingPair
+        PersistCheckBox
         {
-            title: qsTr("Show Only Inbound Messages");
+            topMargin: 10
             key: "onlyInbound"
-    
-            toggle.onCheckedChanged:
-            {
-        		if (checked) {
-        		    infoText.text = qsTr("Only inbound messages will be shown to speed up loading times.")
-        		} else {
-        		    infoText.text = qsTr("Both inbound and outbound messages will be shown.")
-        		}
+            text: qsTr("Show Only Inbound Messages") + Retranslate.onLanguageChanged
+            
+            onCheckedChanged: {
+                if (checked) {
+                    infoText.text = qsTr("Only inbound messages will be shown to speed up loading times.")
+                } else {
+                    infoText.text = qsTr("Both inbound and outbound messages will be shown.")
+                }
             }
         }
         

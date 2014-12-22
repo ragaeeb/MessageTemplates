@@ -13,6 +13,10 @@ namespace bb {
 	}
 }
 
+namespace canadainc {
+    class MessageImporter;
+}
+
 namespace messagetemplates {
 
 using namespace canadainc;
@@ -22,6 +26,7 @@ class ApplicationUI : public QObject
 	Q_OBJECT
 
 	bb::system::InvokeManager m_invokeManager;
+	MessageImporter* m_importer;
 	LocaleUtil m_locale;
     Persistance m_persistance;
 	LazySceneCover m_cover;
@@ -29,17 +34,20 @@ class ApplicationUI : public QObject
 	QObject* m_root;
 
     ApplicationUI(bb::cascades::Application* app);
-    QObject* initRoot(QString const& qml);
+    void initRoot(QString const& qml);
 
 private slots:
 	void lazyInit();
 	void invoked(bb::system::InvokeRequest const& request);
+	void onMessagesImported(QVariantList const& qvl);
+	void terminateThreads();
 
 signals:
 	void accountsImported(QVariantList const& qvl);
-	void messagesImported(QVariantList const& qvl);
-	void loadProgress(int current, int total);
 	void initialize();
+	void lazyInitComplete();
+    void loadProgress(int current, int total);
+    void messagesImported(QVariantList const& qvl);
 
 public:
 	static void create(bb::cascades::Application* app);

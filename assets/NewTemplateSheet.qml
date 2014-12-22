@@ -7,8 +7,10 @@ Sheet
     
     Page
     {
-        titleBar: TitleBar {
-            acceptAction: ActionItem {
+        titleBar: TitleBar
+        {
+            acceptAction: ActionItem
+            {
                 id: saveAction
                 title: qsTr("Save") + Retranslate.onLanguageChanged
                 
