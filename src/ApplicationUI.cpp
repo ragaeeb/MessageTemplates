@@ -92,10 +92,6 @@ void ApplicationUI::lazyInit()
 
     AppLogFetcher::create( &m_persistance, new MessageTemplatesCollector(), this );
 
-    if ( !Persistance::hasEmailSmsAccess() ) {
-        //m_persist.showToast( tr("Warning: It seems like the app does not have access to your Email/SMS messages Folder. This permission is needed for the app to access the SMS and email services it needs to validatebe able to reply to them via templates. If you leave this permission off, some features may not work properly. Select OK to launch the Application Permissions screen where you can turn these settings on.") );
-    }
-
     qint64 accountId = 0;
     QString messageId = QString::number( PimUtil::extractIdsFromInvoke( m_request.uri().toString(), m_request.data(), accountId ) );
     QStringList tokens = m_request.uri().toString().split(":");

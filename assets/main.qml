@@ -25,6 +25,8 @@ NavigationPane
     
     Page
     {
+        actionBarAutoHideBehavior: ActionBarAutoHideBehavior.HideOnScroll
+        
         titleBar: TitleBar
         {
             kind: TitleBarKind.FreeForm
@@ -47,12 +49,10 @@ NavigationPane
                         bottomMargin: 0
                         
                         horizontalAlignment: HorizontalAlignment.Fill
-                        verticalAlignment: VerticalAlignment.Top
                     }
                     
                     Container
                     {
-                        horizontalAlignment: HorizontalAlignment.Left
                         verticalAlignment: VerticalAlignment.Center
                         leftPadding: 20
                         
@@ -67,8 +67,6 @@ NavigationPane
                             leftMargin: 0
                             rightMargin: 0
                             bottomMargin: 0
-                            
-                            horizontalAlignment: HorizontalAlignment.Left
                             verticalAlignment: VerticalAlignment.Center
                         }
                         
@@ -79,8 +77,6 @@ NavigationPane
                             leftMargin: 0
                             rightMargin: 0
                             bottomMargin: 0
-                            
-                            horizontalAlignment: HorizontalAlignment.Left
                             verticalAlignment: VerticalAlignment.Center
                         }
                         
@@ -254,6 +250,36 @@ NavigationPane
                             }
                         }
                     ]
+                }
+            }
+            
+            PermissionToast
+            {
+                id: tm
+                horizontalAlignment: HorizontalAlignment.Right
+                verticalAlignment: VerticalAlignment.Center
+                labelColor: Color.Black
+                
+                function onReady()
+                {
+                    var allMessages = [];
+                    var allIcons = [];
+                    
+                    if ( !persist.hasEmailSmsAccess() ) {
+                        allMessages.push("Warning: It seems like the app does not have access to your Email/SMS messages Folder. This permission is needed for the app to access the SMS and emails to be able to reply to them with the appropriate templates.");
+                        allIcons.push("images/toast/mail_warning.png");
+                    }
+                    
+                    if (allMessages.length > 0)
+                    {
+                        messages = allMessages;
+                        icons = allIcons;
+                        delegateActive = true;
+                    }
+                }
+                
+                onCreationCompleted: {
+                    app.lazyInitComplete.connect(onReady);
                 }
             }
         }
