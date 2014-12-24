@@ -25,7 +25,157 @@ NavigationPane
     
     Page
     {
-        titleBar: LeftLogoTitleBar {}
+        titleBar: TitleBar
+        {
+            kind: TitleBarKind.FreeForm
+            kindProperties: FreeFormTitleBarKindProperties
+            {
+                Container
+                {
+                    id: titleBar
+                    layout: DockLayout {}
+                    
+                    horizontalAlignment: HorizontalAlignment.Fill
+                    verticalAlignment: VerticalAlignment.Top
+                    
+                    ImageView {
+                        id: bgImageView
+                        imageSource: "images/title_bg.png"
+                        topMargin: 0
+                        leftMargin: 0
+                        rightMargin: 0
+                        bottomMargin: 0
+                        
+                        horizontalAlignment: HorizontalAlignment.Fill
+                        verticalAlignment: VerticalAlignment.Top
+                    }
+                    
+                    Container
+                    {
+                        horizontalAlignment: HorizontalAlignment.Left
+                        verticalAlignment: VerticalAlignment.Center
+                        leftPadding: 20
+                        
+                        layout: StackLayout {
+                            orientation: LayoutOrientation.LeftToRight
+                        }
+                        
+                        ImageView {
+                            id: logoView
+                            imageSource: "images/logo.png"
+                            topMargin: 0
+                            leftMargin: 0
+                            rightMargin: 0
+                            bottomMargin: 0
+                            
+                            horizontalAlignment: HorizontalAlignment.Left
+                            verticalAlignment: VerticalAlignment.Center
+                        }
+                        
+                        ImageView {
+                            id: titleText
+                            imageSource: "images/title_text.png"
+                            topMargin: 0
+                            leftMargin: 0
+                            rightMargin: 0
+                            bottomMargin: 0
+                            
+                            horizontalAlignment: HorizontalAlignment.Left
+                            verticalAlignment: VerticalAlignment.Center
+                        }
+                        
+                        animations: [
+                            ParallelAnimation {
+                                id: translateFade
+                                
+                                FadeTransition {
+                                    easingCurve: StockCurve.CubicIn
+                                    fromOpacity: 0
+                                    toOpacity: 1
+                                    duration: 1000
+                                }
+                                
+                                TranslateTransition {
+                                    toX: 0
+                                    fromX: -300
+                                    duration: 1000
+                                }
+                            }
+                        ]
+                        
+                        onCreationCompleted: {
+                            translateFade.play();
+                        }
+                    }
+                }
+                
+                expandableArea
+                {
+                    expanded: true
+                    
+                    content: Container
+                    {
+                        horizontalAlignment: HorizontalAlignment.Fill
+                        verticalAlignment: VerticalAlignment.Fill
+                        leftPadding: 10; rightPadding: 10; topPadding: 5
+                        
+                        AccountsDropDown
+                        {
+                            id: accountChoice
+                            selectedAccountId: persist.getValueFor("accountId")
+                            
+                            onAccountsLoaded: {
+                                if (numAccounts == 0) {
+                                    persist.showToast( qsTr("No accounts found. Did you find forget to enable permissions?"), "", "asset:///images/dropdown/ic_account.png" );
+                                }
+                            }
+                            
+                            onSelectedValueChanged: {
+                                persist.saveValueFor("accountId", selectedValue);
+                                reloadMessages("onlyInbound");
+                            }
+                            
+                            function reloadMessages(key)
+                            {
+                                if (key == "onlyInbound") {
+                                    app.loadMessages(selectedValue);
+                                }
+                            }
+                            
+                            onCreationCompleted: {
+                                persist.settingChanged.connect(reloadMessages);
+                            }
+                        }
+                        
+                        Slider {
+                            value: persist.getValueFor("days")
+                            horizontalAlignment: HorizontalAlignment.Fill
+                            fromValue: 1
+                            toValue: 30
+                            
+                            onValueChanged: {
+                                var actualValue = Math.floor(value);
+                                var changed = persist.saveValueFor("days", actualValue, false);
+                                
+                                if (accountChoice.selectedOption != null)
+                                {
+                                    if (changed) {
+                                        accountChoice.reloadMessages("onlyInbound");
+                                    }
+                                }
+                            }
+                        }
+                        
+                        ImageView
+                        {
+                            topMargin: 0; bottomMargin: 0
+                            imageSource: "images/divider_threshold.png"
+                            horizontalAlignment: HorizontalAlignment.Center
+                        }
+                    }
+                }
+            }
+        }
         
         Container
         {
@@ -48,33 +198,6 @@ NavigationPane
             {
                 horizontalAlignment: HorizontalAlignment.Fill
                 verticalAlignment: VerticalAlignment.Fill
-                
-                AccountsDropDown
-                {
-                    id: accountChoice
-                    selectedAccountId: persist.getValueFor("accountId")
-                    
-                    onAccountsLoaded: {
-                        listView.scrollToPosition(0, ScrollAnimation.None);
-                        listView.scroll(-100, ScrollAnimation.Smooth);
-                    }
-                    
-                    onSelectedValueChanged: {
-                        persist.saveValueFor("accountId", selectedValue);
-                        reloadMessages("onlyInbound");
-                    }
-                    
-                    function reloadMessages(key)
-                    {
-                        if (key == "onlyInbound") {
-                            app.loadMessages(selectedValue);
-                        }
-                    }
-                    
-                    onCreationCompleted: {
-                        persist.settingChanged.connect(reloadMessages);
-                    }
-                }
                 
                 ProgressDelegate
                 {
@@ -112,7 +235,7 @@ NavigationPane
                                 id: rootItem
                                 imageSource: ListItemData.smallPhotoFilepath ? ListItemData.smallPhotoFilepath : "images/ic_email.png"
                                 title: ListItemData.sender
-                                description: ListItemData.text.replace(/\n/g, " ").substr(0, 80) + "..."
+                                description: ListItemData.text ? ListItemData.text.trim().replace(/\n/g, " ").substr(0, 80) + "..." : ""
                                 status: ListItem.view.localization.renderStandardTime(ListItemData.time)
                                 
                                 animations: [
