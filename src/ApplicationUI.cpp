@@ -22,6 +22,7 @@ ApplicationUI::ApplicationUI(bb::cascades::Application *app) :
 {
     INIT_SETTING(CARD_KEY, true);
     INIT_SETTING(UI_KEY, true);
+    INIT_SETTING("days", 3);
 
 	switch ( m_invokeManager.startupMode() )
 	{
@@ -127,6 +128,8 @@ void ApplicationUI::loadMessages(qint64 accountId)
 	terminateThreads();
 
 	m_importer = new MessageImporter( accountId, m_persistance.getValueFor("onlyInbound").toInt() == 1 );
+	m_importer->setTimeLimit( m_persistance.getValueFor("days").toInt() );
+
 	connect( m_importer, SIGNAL( importCompleted(QVariantList const&) ), this, SIGNAL( messagesImported(QVariantList const&) ) );
 	connect( m_importer, SIGNAL( progress(int, int) ), this, SIGNAL( loadProgress(int, int) ) );
 
