@@ -1,5 +1,4 @@
 import bb.cascades 1.0
-import bb.system 1.0
 
 Page
 {
@@ -8,14 +7,22 @@ Page
     
     actions: [
         ActionItem {
+            id: newTemplateAction
             title: qsTr("New Template") + Retranslate.onLanguageChanged
             imageSource: "images/ic_new_template.png"
-            ActionBar.placement: ActionBarPlacement.OnBar
+            ActionBar.placement: 'Signature' in ActionBarPlacement ? ActionBarPlacement["Signature"] : ActionBarPlacement.OnBar
 
             onTriggered: {
+                console.log("UserEvent: NewTemplateAction");
                 var sheet = sheetDefinition.createObject();
                 sheet.open();
             }
+            
+            shortcuts: [
+                SystemShortcut {
+                    type: SystemShortcuts.CreateNew
+                }
+            ]
             
             attachedObjects: [
                 ComponentDefinition {
@@ -25,57 +32,53 @@ Page
             ]
         },
 
-        DeleteActionItem {
+        DeleteActionItem
+        {
             id: clearAllAction
+            imageSource: "images/menu/ic_clear_templates.png"
             title: qsTr("Delete All") + Retranslate.onLanguageChanged
 
             onTriggered: {
-                prompt.show()
-            }
-
-            attachedObjects: [
-                SystemDialog {
-                    id: prompt
-                    title: qsTr("Confirm") + Retranslate.onLanguageChanged
-                    body: qsTr("Are you sure you want to delete all the templates?") + Retranslate.onLanguageChanged
-                    confirmButton.label: qsTr("Yes") + Retranslate.onLanguageChanged
-                    cancelButton.label: qsTr("No") + Retranslate.onLanguageChanged
-
-                    onFinished: {
-                        if (result == SystemUiResult.ConfirmButtonSelection) {
-                            persist.remove("templates");
-                            persist.showToast( qsTr("Cleared all templates!") );
-                        }
-                    }
+                console.log("UserEvent: DeleteAllTemplates");
+                var ok = persist.showBlockingDialog( qsTr("Confirmation"), qsTr("Are you sure you want to delete all the templates?") );
+                console.log("UserEvent: ClearTemplatesConfirm", ok);
+                
+                if (ok) {
+                    persist.remove("templates", false);
+                    adm.clear();
+                    persist.showToast( qsTr("Cleared all templates!") );
+                    updatePlaceholder();
                 }
-            ]
+            }
         }
     ]
     
     titleBar: TitleBar {
-        title: qsTr("New Template") + Retranslate.onLanguageChanged
+        title: qsTr("Select Template") + Retranslate.onLanguageChanged
     }
 
     Container
     {
-        leftPadding: 10; rightPadding: 10; topPadding: 10
         horizontalAlignment: HorizontalAlignment.Fill
         verticalAlignment: VerticalAlignment.Fill
+        layout: DockLayout {}
         
-        
-        Label {
-            id: instruction
-            multiline: true
-            horizontalAlignment: HorizontalAlignment.Fill
-            textStyle.textAlign: TextAlign.Center
-            textStyle.fontSize: FontSize.XSmall
+        EmptyDelegate
+        {
+            id: emptyDelegate
+            graphic: "images/empty/empty_templates.png"
+            labelText: qsTr("No templates saved. Click on the 'New Template' action below to create one.") + Retranslate.onLanguageChanged
+            
+            onImageTapped: {
+                console.log("UserEvent: Empty Templates Triggered");
+                newTemplateAction.triggered();
+            }
         }
         
-        Divider {
-            topMargin: 0; bottomMargin: 0
-        }
-        
-        ListView {
+        ListView
+        {
+            id: listView
+            
             dataModel: ArrayDataModel {
                 id: adm
             }
@@ -83,20 +86,20 @@ Page
             function performDelete(indexPath)
             {
                 var templates = persist.getValueFor("templates");
-
-                if (! templates) {
-                    templates = [];
-                }
-
                 templates.splice(indexPath[0], 1);
                 persist.saveValueFor("templates", templates);
 
-                adm.removeAt(indexPath[0]);
+                adm.removeAt( indexPath[0] );
+                updatePlaceholder();
+                
+                persist.showToast( qsTr("Removed template!"), "", "asset:///images/menu/ic_delete_template.png" );
             }
 
             listItemComponents: [
-                ListItemComponent {
-                    StandardListItem {
+                ListItemComponent
+                {
+                    StandardListItem
+                    {
                         id: rootItem
                         title: ListItemData.name
                         description: ListItemData.message.replace(/\n/g, " ").substr(0, 60) + "..."
@@ -107,10 +110,28 @@ Page
                                 title: rootItem.title
                                 subtitle: rootItem.description
 
-                                DeleteActionItem {
+                                DeleteActionItem
+                                {
+                                    imageSource: "images/menu/ic_delete_template.png"
+                                    
                                     onTriggered: {
-                                        rootItem.ListItem.view.performDelete(rootItem.ListItem.indexPath);
+                                        console.log("UserEvent: DeleteTemplate");
+                                        itemDeletedAnim.play();
                                     }
+                                }
+                            }
+                        ]
+                        
+                        animations: [
+                            ScaleTransition {
+                                id: itemDeletedAnim
+                                fromX: 1
+                                toX: 0
+                                duration: 500
+                                easingCurve: StockCurve.QuarticInOut
+                                onEnded: {
+                                    rootItem.ListItem.view.performDelete(rootItem.ListItem.indexPath);
+                                    rootItem.scaleX = 1;
                                 }
                             }
                         ]
@@ -119,24 +140,25 @@ Page
             ]
 
             onTriggered: {
+                console.log("UserEvent: TemplateSelected");
+                
                 var data = dataModel.data(indexPath);
                 app.processReply(accountId, message, data.message);
             }
 
             function onSettingChanged(key)
             {
-                if (key == "templates") {
+                if (key == "templates")
+                {
                     adm.clear();
+                    
                     var templates = persist.getValueFor("templates");
-
+                    
                     if (templates && templates.length > 0) {
                         adm.append(templates);
-                        clearAllAction.enabled = true;
-                        instruction.text = qsTr("Choose which template to reply with:");
-                    } else {
-                        clearAllAction.enabled = false;
-                        instruction.text = qsTr("No templates saved. Click on the 'New Template' action below to create one.");
                     }
+                    
+                    updatePlaceholder();
                 }
             }
 
@@ -145,5 +167,11 @@ Page
                 persist.settingChanged.connect(onSettingChanged);
             }
         }
+    }
+    
+    function updatePlaceholder()
+    {
+        emptyDelegate.delegateActive = adm.isEmpty();
+        listView.visible = !emptyDelegate.delegateActive;
     }
 }
