@@ -14,8 +14,13 @@ NavigationPane
         page.destroy();
     }
 
-    Menu.definition: CanadaIncMenu {
+    Menu.definition: CanadaIncMenu
+    {
+        help.imageSource: "images/menu/ic_help.png"
+        help.title: qsTr("Help") + Retranslate.onLanguageChanged
         projectName: "message-templates"
+        settings.imageSource: "images/menu/ic_settings.png"
+        settings.title: qsTr("Settings") + Retranslate.onLanguageChanged
     }
     
     Page
@@ -36,7 +41,8 @@ NavigationPane
                 }
             }
             
-            ListView {
+            ListView
+            {
                 id: listView
                 property variant localization: localizer
 
@@ -119,7 +125,7 @@ NavigationPane
         {
             adm.clear();
             adm.append(results);
-            
+
             if (results.length == 0)
             {
                 if ( persist.getValueFor("onlyInbound") == 1 ) {

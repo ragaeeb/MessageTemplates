@@ -10,17 +10,16 @@ Page
     {
         horizontalAlignment: HorizontalAlignment.Fill
         verticalAlignment: VerticalAlignment.Fill
-        leftPadding: 20
-        topPadding: 20
-        rightPadding: 20
-        bottomPadding: 20
+        leftPadding: 10
+        topPadding: 10
+        rightPadding: 10
+        bottomPadding: 10
         
         PersistCheckBox
         {
-            topMargin: 10
             key: "onlyInbound"
             text: qsTr("Show Only Inbound Messages") + Retranslate.onLanguageChanged
-            
+
             onCheckedChanged: {
                 if (checked) {
                     infoText.text = qsTr("Only inbound messages will be shown to speed up loading times.")
@@ -29,7 +28,14 @@ Page
                 }
             }
         }
-        
+
+        ImageView
+        {
+            topMargin: 40
+            imageSource: "images/ic_divider.png"
+            horizontalAlignment: HorizontalAlignment.Center
+        }
+
         Label {
             id: infoText
             multiline: true
