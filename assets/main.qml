@@ -29,28 +29,27 @@ NavigationPane
         
         Container
         {
+            layout: DockLayout {}
             horizontalAlignment: HorizontalAlignment.Fill
             verticalAlignment: VerticalAlignment.Fill
-
-            ProgressDelegate
+            
+            EmptyDelegate
             {
-                id: progressDelegate
+                id: emptyDelegate
+                graphic: "images/empty/mail_help.png"
                 
-                onCreationCompleted: {
-                    app.loadProgress.connect(onProgressChanged);
+                onImageTapped: {
+                    console.log("UserEvent: ConversationsEmptyTapped");
+                    accountChoice.expanded = true;
                 }
             }
             
-            ListView
+            Container
             {
-                id: listView
-                property variant localization: localizer
-
-                dataModel: ArrayDataModel {
-                    id: adm
-                }
+                horizontalAlignment: HorizontalAlignment.Fill
+                verticalAlignment: VerticalAlignment.Fill
                 
-                leadingVisual: AccountsDropDown
+                AccountsDropDown
                 {
                     id: accountChoice
                     selectedAccountId: persist.getValueFor("accountId")
@@ -77,43 +76,62 @@ NavigationPane
                     }
                 }
                 
-                onTriggered: {
-                    definition.source = "TemplatesPage.qml";
+                ProgressDelegate
+                {
+                    id: progressDelegate
                     
-                    var data = dataModel.data(indexPath);
-                    var page = definition.createObject();
-                    page.message = data;
-                    page.accountId = accountChoice.selectedValue;
-
-                    navigationPane.push(page);
+                    onCreationCompleted: {
+                        app.loadProgress.connect(onProgressChanged);
+                    }
                 }
                 
-                listItemComponents: [
-                    ListItemComponent
-                    {
-                        StandardListItem {
-                            id: rootItem
-                            imageSource: ListItemData.smallPhotoFilepath ? ListItemData.smallPhotoFilepath : "images/ic_email.png"
-                            title: ListItemData.sender
-                            description: ListItemData.text.replace(/\n/g, " ").substr(0, 80) + "..."
-                            status: ListItem.view.localization.renderStandardTime(ListItemData.time)
-
-                            animations: [
-                                FadeTransition {
-                                    id: slider
-                                    fromOpacity: 0
-                                    toOpacity: 1
-                                    easingCurve: StockCurve.SineInOut
-                                    duration: 400
+                ListView
+                {
+                    id: listView
+                    property variant localization: localizer
+                    
+                    dataModel: ArrayDataModel {
+                        id: adm
+                    }
+                    
+                    onTriggered: {
+                        definition.source = "TemplatesPage.qml";
+                        
+                        var data = dataModel.data(indexPath);
+                        var page = definition.createObject();
+                        page.message = data;
+                        page.accountId = accountChoice.selectedValue;
+                        
+                        navigationPane.push(page);
+                    }
+                    
+                    listItemComponents: [
+                        ListItemComponent
+                        {
+                            StandardListItem {
+                                id: rootItem
+                                imageSource: ListItemData.smallPhotoFilepath ? ListItemData.smallPhotoFilepath : "images/ic_email.png"
+                                title: ListItemData.sender
+                                description: ListItemData.text.replace(/\n/g, " ").substr(0, 80) + "..."
+                                status: ListItem.view.localization.renderStandardTime(ListItemData.time)
+                                
+                                animations: [
+                                    FadeTransition {
+                                        id: slider
+                                        fromOpacity: 0
+                                        toOpacity: 1
+                                        easingCurve: StockCurve.SineInOut
+                                        duration: 400
+                                    }
+                                ]
+                                
+                                onCreationCompleted: {
+                                    slider.play()
                                 }
-                            ]
-                            
-                            onCreationCompleted: {
-                                slider.play()
                             }
                         }
-                    }
-                ]
+                    ]
+                }
             }
         }
         
@@ -129,14 +147,14 @@ NavigationPane
             if (results.length == 0)
             {
                 if ( persist.getValueFor("onlyInbound") == 1 ) {
-                    persist.showToast( qsTr("No messages found for this account. We are only showing inbound messages. If you would like to show all messages, swipe-down from the top-bezel go to Settings and turn off the 'Show Only Inbound Messages' setting."), qsTr("OK") );
+                    emptyDelegate.labelText = qsTr("No messages found for this account. We are only showing inbound messages. If you would like to show all messages, swipe-down from the top-bezel go to Settings and turn off the 'Show Only Inbound Messages' setting.");
                 } else {
-                    persist.showToast( qsTr("No messages found for this account."), qsTr("OK") );
+                    emptyDelegate.labelText = qsTr("No messages found for this account.");
                 }
             }
             
-            listView.scrollToPosition(0, ScrollAnimation.None);
-            listView.scroll(-100, ScrollAnimation.Smooth);
+            listView.visible = results.length > 0;
+            emptyDelegate.delegateActive = !listView.visible;
         }
     }
 }
