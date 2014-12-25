@@ -92,18 +92,25 @@ void ApplicationUI::lazyInit()
 
     AppLogFetcher::create( &m_persistance, new MessageTemplatesCollector(), this );
 
-    qint64 accountId = 0;
-    QString messageId = QString::number( PimUtil::extractIdsFromInvoke( m_request.uri().toString(), m_request.data(), accountId ) );
-    QStringList tokens = m_request.uri().toString().split(":");
-
-    if ( accountId && !messageId.isNull() )
+    if ( !m_request.target().isNull() )
     {
-        QVariantMap map;
-        map["id"] = messageId;
+        qint64 accountId = 0;
+        QString messageId = QString::number( PimUtil::extractIdsFromInvoke( m_request.uri().toString(), m_request.data(), accountId ) );
+        QStringList tokens = m_request.uri().toString().split(":");
 
-        m_root->setProperty("accountId", accountId);
-        m_root->setProperty("message", map);
+        if ( accountId && !messageId.isNull() )
+        {
+            QVariantMap map;
+            map["id"] = messageId;
+
+            m_root->setProperty("accountId", accountId);
+            m_root->setProperty("message", map);
+        }
     }
+
+    QmlDocument* qml = QmlDocument::create("asset:///NotificationToast.qml").parent(this);
+    QObject* toast = qml->createRootObject<QObject>();
+    QmlDocument::defaultDeclarativeEngine()->rootContext()->setContextProperty("tutorialToast", toast);
 
     emit lazyInitComplete();
 }

@@ -9,9 +9,12 @@ Sheet
     {
         titleBar: TitleBar
         {
+            title: qsTr("New Template") + Retranslate.onLanguageChanged
+            
             acceptAction: ActionItem
             {
                 id: saveAction
+                imageSource: "images/dropdown/ic_save.png"
                 title: qsTr("Save") + Retranslate.onLanguageChanged
                 
                 onTriggered: {
@@ -46,7 +49,9 @@ Sheet
                 ]
             }
             
-            dismissAction: ActionItem {
+            dismissAction: ActionItem
+            {
+                imageSource: "images/dropdown/ic_close.png"
                 title: qsTr("Cancel") + Retranslate.onLanguageChanged
                 
                 onTriggered: {
@@ -70,6 +75,9 @@ Sheet
     
     onOpened: {
         messageField.requestFocus();
+        
+        if ( tutorialToast.tutorial( "tutorialNewTemplateInfo", qsTr("Each template consists of a title and body. In this screen simply type the body and hit 'Save' which will prompt you to enter a title."), "images/menu/ic_new_template.png" ) ) {}
+        else if ( tutorialToast.tutorial( "tutorialBodyInfo", qsTr("You can make the body of the message as long as you want. But just keep in mind that SMS messages can only be sent 160 characters max per message."), "images/menu/ic_new_template.png" ) ) {}
     }
     
     onClosed: {

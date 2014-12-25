@@ -2,6 +2,7 @@ import bb.cascades 1.0
 
 Page
 {
+    id: root
     property variant accountId
     property variant message
     
@@ -9,7 +10,7 @@ Page
         ActionItem {
             id: newTemplateAction
             title: qsTr("New Template") + Retranslate.onLanguageChanged
-            imageSource: "images/ic_new_template.png"
+            imageSource: "images/menu/ic_new_template.png"
             ActionBar.placement: 'Signature' in ActionBarPlacement ? ActionBarPlacement["Signature"] : ActionBarPlacement.OnBar
 
             onTriggered: {
@@ -173,5 +174,9 @@ Page
     {
         emptyDelegate.delegateActive = adm.isEmpty();
         listView.visible = !emptyDelegate.delegateActive;
+        
+        if ( tutorialToast.tutorial( "tutorialTemplatesPage", qsTr("You can create customized templates here. Once you create one you can tap on it to reply to the selected message with."), "images/menu/ic_new_template.png" ) ) {}
+        else if ( tutorialToast.tutorial( "tutorialDeleteTemplate", qsTr("Deleting templates are really easy! Simply press-and-hold on the list item and from the menu choose 'Delete'"), "images/menu/ic_delete_template.png" ) ) {}
+        else if ( tutorialToast.tutorial( "tutorialClearTemplates", qsTr("If you want to delete all the templates in one shot, tap on the '...' to expand the menu and choose 'Delete All'."), "images/menu/ic_clear_templates.png" ) ) {}
     }
 }

@@ -2,6 +2,8 @@ import bb.cascades 1.0
 
 Page
 {
+    id: settingsPage
+    
     titleBar: TitleBar {
         title: qsTr("Settings") + Retranslate.onLanguageChanged
     }
@@ -44,5 +46,16 @@ Page
             verticalAlignment: VerticalAlignment.Bottom
             horizontalAlignment: HorizontalAlignment.Center
         }
+    }
+    
+    function onPushed(page)
+    {
+        navigationPane.pushTransitionEnded.disconnect(onPushed);
+
+        if ( tutorialToast.tutorial( "tutorialOnlyInbound", qsTr("Enable the 'Show Only Inbound Messages' setting to speed up startup loading times by displaying only the incoming messages for your accounts."), "images/menu/ic_settings.png" ) ) {}
+    }
+    
+    onCreationCompleted: {
+        navigationPane.pushTransitionEnded.connect(onPushed);
     }
 }

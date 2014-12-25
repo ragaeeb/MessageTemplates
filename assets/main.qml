@@ -275,6 +275,17 @@ NavigationPane
                         messages = allMessages;
                         icons = allIcons;
                         delegateActive = true;
+                    } else {
+                        if ( tutorialToast.tutorial( "tutorialAccounts", qsTr("You can change the list of messages you see by changing the account using the dropdown! Simply tap on the dropdown at the top to expand it and switch accounts."), "images/dropdown/ic_account.png" ) ) {
+                            accountChoice.expanded = true;
+                        }
+                        
+                        else if ( tutorialToast.tutorial( "tutorialSMS", qsTr("If you want to reply to a SMS messages, simply tap on the dropdown at the top and choose the 'SMS' account."), "images/dropdown/ic_sms.png" ) ) {}
+                        else if ( tutorialToast.tutorial( "tutorialWelcome", qsTr("In this main screen you can tap on the email that you want to reply with a template with."), "images/ic_email.png" ) ) {}
+                        else if ( tutorialToast.tutorial( "tutorialThreshold", qsTr("Use the slider at the top to increase or decrease the number of days worth of messages to fetch. The maximum is 30 days and the minimum is 1 day."), "images/empty/mail_help.png" ) ) {}
+                        else if ( tutorialToast.tutorial( "tutorialFastLoad", qsTr("If you want to speed up load times of this screen, decrease the threshold slider at the top to 1 day only and you will be able to get the latest messages to reply to."), "images/menu/ic_help.png" ) ) {}
+                        else if ( tutorialToast.tutorial( "tutorialSettings", qsTr("To customize settings in the app, swipe-down from the top-bezel and choose 'Settings'."), "images/menu/ic_settings.png" ) ) {}
+                        else if ( tutorialToast.tutorial( "tutorialHelp", qsTr("To get additional help about the app and the developers, please swipe-down from the top-bezel and choose 'Help'."), "images/menu/ic_help.png" ) ) {}
                     }
                 }
                 
