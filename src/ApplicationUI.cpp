@@ -147,13 +147,22 @@ void ApplicationUI::onMessagesImported(QVariantList const& qvl)
 }
 
 
-void ApplicationUI::processReply(qint64 accountId, QVariantMap const& message, QString const& templateBody)
+void ApplicationUI::processReply(qint64 accountId, QVariantMap const& message, QVariantList const& templateBodies)
 {
+    LOGGER(accountId << message << templateBodies);
+    QString templateBody;
+
+    foreach (QVariant const& body, templateBodies) {
+        templateBody += body.toString() + "\r\n\r\n";
+    }
+
+    templateBody = templateBody.trimmed();
+
 	if (accountId == ACCOUNT_KEY_SMS) {
 		PimUtil::replyToSMS( message.value("senderAddress").toString(), templateBody, m_invokeManager );
 	} else {
         m_persistance.copyToClipboard(templateBody, false);
-        m_persistance.showBlockingToast( tr("Template has been copied to the clipboard! Please press-and-hold on an empty space and choose to Paste your message."), tr("OK") );
+        m_persistance.showBlockingToast( tr("Template has been copied to the clipboard! Please press-and-hold on an empty space and choose to Paste your message."), "", "asset:///images/toast/copy.png" );
 		InvocationUtils::replyToMessage( accountId, message.value("id").toString(), m_invokeManager );
 	}
 }
@@ -161,6 +170,7 @@ void ApplicationUI::processReply(qint64 accountId, QVariantMap const& message, Q
 
 void ApplicationUI::childCardDone(bb::system::CardDoneMessage const& message)
 {
+    LOGGER( message.reason() );
 	m_invokeManager.sendCardDone(message);
 }
 
