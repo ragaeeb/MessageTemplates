@@ -5,7 +5,7 @@ Page
     id: root
     property variant accountId
     property variant message
-    
+
     actions: [
         ActionItem {
             id: newTemplateAction
@@ -18,13 +18,13 @@ Page
                 var sheet = sheetDefinition.createObject();
                 sheet.open();
             }
-            
+
             shortcuts: [
                 SystemShortcut {
                     type: SystemShortcuts.CreateNew
                 }
             ]
-            
+
             attachedObjects: [
                 ComponentDefinition {
                     id: sheetDefinition
@@ -52,7 +52,8 @@ Page
         }
     ]
     
-    titleBar: TitleBar {
+    titleBar: TitleBar
+    {
         title: qsTr("Select Template") + Retranslate.onLanguageChanged
         
         acceptAction: ActionItem
@@ -82,18 +83,6 @@ Page
         horizontalAlignment: HorizontalAlignment.Fill
         verticalAlignment: VerticalAlignment.Fill
         layout: DockLayout {}
-        
-        EmptyDelegate
-        {
-            id: emptyDelegate
-            graphic: "images/empty/empty_templates.png"
-            labelText: qsTr("No templates saved. Click on the 'New Template' action below to create one.") + Retranslate.onLanguageChanged
-            
-            onImageTapped: {
-                console.log("UserEvent: EmptyTemplatesTapped");
-                newTemplateAction.triggered();
-            }
-        }
         
         Container
         {
@@ -229,6 +218,22 @@ Page
                 }
             }
         }
+        
+        EmptyDelegate
+        {
+            id: emptyDelegate
+            graphic: "images/empty/empty_templates.png"
+            labelText: qsTr("No templates saved. Click on the 'New Template' action below to create one.") + Retranslate.onLanguageChanged
+            
+            onImageTapped: {
+                console.log("UserEvent: EmptyTemplatesTapped");
+                newTemplateAction.triggered();
+            }
+        }
+    }
+    
+    function sortTemplates(a,b) {
+        return a.name.localeCompare(b.name);
     }
     
     function updatePlaceholder(key)
@@ -240,6 +245,8 @@ Page
             if (!templates) {
                 templates = [];
             }
+            
+            templates.sort(sortTemplates);
             
             adm.clear();
             
