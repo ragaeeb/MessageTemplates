@@ -56,7 +56,7 @@ public:
     Q_SLOT void loadAccounts();
     Q_INVOKABLE void loadMessages(qint64 accountId);
     Q_SLOT void childCardDone(bb::system::CardDoneMessage const& message=bb::system::CardDoneMessage());
-    Q_INVOKABLE void processReply(qint64 accountId, QVariantMap const& message, QString const& templateBody);
+    Q_INVOKABLE void processReply(qint64 accountId, QVariantMap const& message, QVariantList const& templateBodies);
 };
 
 } // salat
