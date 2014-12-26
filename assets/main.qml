@@ -179,17 +179,6 @@ NavigationPane
             horizontalAlignment: HorizontalAlignment.Fill
             verticalAlignment: VerticalAlignment.Fill
             
-            EmptyDelegate
-            {
-                id: emptyDelegate
-                graphic: "images/empty/mail_help.png"
-                
-                onImageTapped: {
-                    console.log("UserEvent: ConversationsEmptyTapped");
-                    accountChoice.expanded = true;
-                }
-            }
-            
             Container
             {
                 horizontalAlignment: HorizontalAlignment.Fill
@@ -250,6 +239,17 @@ NavigationPane
                             }
                         }
                     ]
+                }
+            }
+            
+            EmptyDelegate
+            {
+                id: emptyDelegate
+                graphic: "images/empty/mail_help.png"
+                
+                onImageTapped: {
+                    console.log("UserEvent: ConversationsEmptyTapped");
+                    accountChoice.expanded = true;
                 }
             }
             

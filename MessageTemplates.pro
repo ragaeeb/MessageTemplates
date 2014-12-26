@@ -22,4 +22,14 @@ CONFIG(debug, debug|release) {
     LIBS += -Bstatic -L../../quazip/arm/o.le-v7-g -lquazip -Bdynamic
 }
 
+simulator {
+
+CONFIG(debug, debug|release) {
+    DESTDIR = o-g
+    LIBS += -Bstatic -L../../canadainc/x86/o-g/ -lcanadainc -Bdynamic
+    LIBS += -Bstatic -L../../quazip/x86/o-g -lquazip -Bdynamic
+}
+
+}
+
 include(config.pri)
