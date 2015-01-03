@@ -76,7 +76,6 @@
 	<configuration name="Simulator-Debug">
 		<platformArchitecture>x86</platformArchitecture>
 		<entryPointType>Qnx/Elf</entryPointType>
-
 		<asset entryPointId="MessageTemplates" path="x86/o-g/MessageTemplates" entry="true" type="Qnx/Elf">MessageTemplates</asset>
 	</configuration>
     <configuration name="Device-Release">

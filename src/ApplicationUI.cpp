@@ -2,7 +2,6 @@
 
 #include "applicationui.hpp"
 #include "AccountImporter.h"
-#include "AppLogFetcher.h"
 #include "CardUtils.h"
 #include "InvocationUtils.h"
 #include "IOUtils.h"
@@ -18,7 +17,7 @@ using namespace bb::cascades;
 using namespace canadainc;
 
 ApplicationUI::ApplicationUI(bb::cascades::Application *app) :
-        QObject(app), m_importer(NULL), m_cover("Cover.qml"), m_root(NULL)
+        QObject(app), m_importer(NULL), m_root(NULL)
 {
     INIT_SETTING(CARD_KEY, true);
     INIT_SETTING(UI_KEY, true);
@@ -32,6 +31,7 @@ ApplicationUI::ApplicationUI(bb::cascades::Application *app) :
         break;
 
 	case ApplicationStartupMode::InvokeCard:
+	    LogMonitor::create(CARD_KEY, CARD_LOG_FILE, this);
 		connect( &m_invokeManager, SIGNAL( invoked(bb::system::InvokeRequest const&) ), this, SLOT( invoked(bb::system::InvokeRequest const&) ) );
 		connect( &m_invokeManager, SIGNAL( childCardDone(bb::system::CardDoneMessage const&) ), this, SLOT( childCardDone(bb::system::CardDoneMessage const&) ) );
 		break;
