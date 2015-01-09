@@ -160,7 +160,7 @@ Delegate
                         scaleX: 1.25
                         scaleY: 1.25
                         opacity: 0
-                        topMargin: 0; topPadding: 0
+                        topPadding: 0
                     }
                     
                     attachedObjects: [

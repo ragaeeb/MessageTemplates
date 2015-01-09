@@ -5,7 +5,7 @@ CONFIG += qt warn_on cascades10
 INCLUDEPATH += ../../canadainc/src/
 INCLUDEPATH += ../../quazip/src/
 
-LIBS += -lbbsystem -lbbpim -lbbutilityi18n -lbb -lbbdata -lbbdevice -lbbplatform
+LIBS += -lbbsystem -lbbpim -lbbutilityi18n -lbb -lbbdata -lbbdevice -lbbplatform -lbbcascadespickers
 LIBS += -lz
 
 QT += network

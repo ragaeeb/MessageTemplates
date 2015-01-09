@@ -11,6 +11,37 @@
 #include "MessageTemplatesCollector.h"
 #include "PimUtil.h"
 
+namespace {
+
+QString performBackup(QString const& destination)
+{
+    QSettings s;
+    QVariant qvl = s.value("templates");
+
+    bb::data::JsonDataAccess jda;
+    jda.save(qvl, destination);
+
+    return destination;
+}
+
+
+bool performRestore(QString const& source)
+{
+    bb::data::JsonDataAccess jda;
+    QVariant result = jda.load(source);
+
+    if ( result.isValid() )
+    {
+        QSettings s;
+        s.setValue("templates", result);
+        return true;
+    }
+
+    return false;
+}
+
+}
+
 namespace messagetemplates {
 
 using namespace bb::cascades;
@@ -113,6 +144,10 @@ void ApplicationUI::lazyInit()
         }
     }
 
+    qmlRegisterType<bb::cascades::pickers::FilePicker>("bb.cascades.pickers", 1, 0, "FilePicker");
+    qmlRegisterUncreatableType<bb::cascades::pickers::FileType>("bb.cascades.pickers", 1, 0, "FileType", "Can't instantiate");
+    qmlRegisterUncreatableType<bb::cascades::pickers::FilePickerMode>("bb.cascades.pickers", 1, 0, "FilePickerMode", "Can't instantiate");
+
     emit lazyInitComplete();
 }
 
@@ -166,6 +201,52 @@ void ApplicationUI::processReply(qint64 accountId, QVariantMap const& message, Q
         m_persistance.showBlockingToast( tr("Template has been copied to the clipboard! Please press-and-hold on an empty space and choose to Paste your message."), "", "asset:///images/toast/copy.png" );
 		InvocationUtils::replyToMessage( accountId, message.value("id").toString(), m_invokeManager );
 	}
+}
+
+
+void ApplicationUI::backup(QString const& destination)
+{
+    LOGGER(destination);
+
+    QFutureWatcher<QString>* qfw = new QFutureWatcher<QString>(this);
+    connect( qfw, SIGNAL( finished() ), this, SLOT( onSaved() ) );
+
+    QFuture<QString> future = QtConcurrent::run(performBackup, destination);
+    qfw->setFuture(future);
+}
+
+
+void ApplicationUI::restore(QString const& source)
+{
+    LOGGER(source);
+
+    QFutureWatcher<bool>* qfw = new QFutureWatcher<bool>(this);
+    connect( qfw, SIGNAL( finished() ), this, SLOT( onRestored() ) );
+
+    QFuture<bool> future = QtConcurrent::run(performRestore, source);
+    qfw->setFuture(future);
+}
+
+
+void ApplicationUI::onSaved()
+{
+    QFutureWatcher<QString>* qfw = static_cast< QFutureWatcher<QString>* >( sender() );
+    QString result = qfw->result();
+
+    emit backupComplete(result);
+
+    qfw->deleteLater();
+}
+
+
+void ApplicationUI::onRestored()
+{
+    QFutureWatcher<bool>* qfw = static_cast< QFutureWatcher<bool>* >( sender() );
+    qfw->deleteLater();
+    bool result = qfw->result();
+
+    LOGGER("RestoreResult" << result);
+    emit restoreComplete(result);
 }
 
 

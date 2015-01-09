@@ -270,6 +270,11 @@ NavigationPane
                         allIcons.push("images/toast/mail_warning.png");
                     }
                     
+                    if ( !persist.hasSharedFolderAccess() ) {
+                        allMessages.push("Warning: It seems like the app does not have access to your Shared Folder. This permission is needed for the app to properly allow you to backup & restore the database. If you leave this permission off, some features may not work properly. Select the icon to launch the Application Permissions screen where you can turn these settings on.");
+                        allIcons.push("images/toast/no_shared_access.png");
+                    }
+                    
                     if (allMessages.length > 0)
                     {
                         messages = allMessages;

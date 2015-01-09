@@ -40,23 +40,29 @@ private slots:
 	void lazyInit();
 	void invoked(bb::system::InvokeRequest const& request);
 	void onMessagesImported(QVariantList const& qvl);
+    void onRestored();
+    void onSaved();
 	void terminateThreads();
 
 signals:
 	void accountsImported(QVariantList const& qvl);
+    void backupComplete(QString const& result);
 	void initialize();
 	void lazyInitComplete();
     void loadProgress(int current, int total);
     void messagesImported(QVariantList const& qvl);
+    void restoreComplete(bool result);
 
 public:
 	static void create(bb::cascades::Application* app);
     virtual ~ApplicationUI();
 
+    Q_INVOKABLE void backup(QString const& destination);
     Q_SLOT void loadAccounts();
     Q_INVOKABLE void loadMessages(qint64 accountId);
     Q_SLOT void childCardDone(bb::system::CardDoneMessage const& message=bb::system::CardDoneMessage());
     Q_INVOKABLE void processReply(qint64 accountId, QVariantMap const& message, QVariantList const& templateBodies);
+    Q_INVOKABLE void restore(QString const& source);
 };
 
 } // salat
