@@ -214,6 +214,7 @@ Page
                     
                     allUsedDelegate.delegateActive = adm.isEmpty();
                     toUse.visible = !selectionModel.isEmpty();
+                    listView.visible = !adm.isEmpty();
                     selectedHeader.subtitle = selectionModel.size();
                 }
             }

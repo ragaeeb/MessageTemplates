@@ -64,7 +64,7 @@ Delegate
     
     function tutorial(key, text, imageUri)
     {
-        if ( !persist.contains(key) )
+        if ( !persist.contains(key) && !suppress )
         {
             initInternal(text, imageUri, key, qsTr("Tip!"));
             return true;

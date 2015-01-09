@@ -198,7 +198,17 @@ void ApplicationUI::processReply(qint64 accountId, QVariantMap const& message, Q
 		PimUtil::replyToSMS( message.value("senderAddress").toString(), templateBody, m_invokeManager );
 	} else {
         m_persistance.copyToClipboard(templateBody, false);
-        m_persistance.showBlockingToast( tr("Template has been copied to the clipboard! Please press-and-hold on an empty space and choose to Paste your message."), "", "asset:///images/toast/copy.png" );
+
+        if ( m_persistance.getValueFor("suppressCopied").toInt() != 1 )
+        {
+            bool suppress = true;
+            m_persistance.showBlockingDialog( tr("Copied"), tr("Template has been copied to the clipboard! Please press-and-hold on an empty space and choose to Paste your message."), tr("Don't Show Again"), suppress, tr("OK"), "" );
+
+            if (suppress) {
+                m_persistance.saveValueFor("suppressCopied", 1);
+            }
+        }
+
 		InvocationUtils::replyToMessage( accountId, message.value("id").toString(), m_invokeManager );
 	}
 }
