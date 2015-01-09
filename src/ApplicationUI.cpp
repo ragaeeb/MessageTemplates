@@ -103,6 +103,8 @@ void ApplicationUI::initRoot(QString const& qmlDoc)
     QObject* toast = qml->createRootObject<QObject>();
     QmlDocument::defaultDeclarativeEngine()->rootContext()->setContextProperty("tutorialToast", toast);
 
+    AppLogFetcher::create( &m_persistance, new MessageTemplatesCollector(), this );
+
     QMap<QString, QObject*> context;
     context.insert("localizer", &m_locale);
 
@@ -125,8 +127,6 @@ void ApplicationUI::lazyInit()
     INIT_SETTING("onlyInbound", 1);
 
     connect( Application::instance(), SIGNAL( aboutToQuit() ), this, SLOT( terminateThreads() ) );
-
-    AppLogFetcher::create( &m_persistance, new MessageTemplatesCollector(), this );
 
     if ( !m_request.target().isNull() )
     {
