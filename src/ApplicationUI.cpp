@@ -32,8 +32,9 @@ ApplicationUI::ApplicationUI(bb::cascades::Application *app) :
 
 	case ApplicationStartupMode::InvokeCard:
 	    LogMonitor::create(CARD_KEY, CARD_LOG_FILE, this);
+	    connect( &m_invokeManager, SIGNAL( cardPooled(bb::system::CardDoneMessage const&) ), app, SLOT( quit() ) );
+        connect( &m_invokeManager, SIGNAL( childCardDone(bb::system::CardDoneMessage const&) ), this, SLOT( childCardDone(bb::system::CardDoneMessage const&) ) );
 		connect( &m_invokeManager, SIGNAL( invoked(bb::system::InvokeRequest const&) ), this, SLOT( invoked(bb::system::InvokeRequest const&) ) );
-		connect( &m_invokeManager, SIGNAL( childCardDone(bb::system::CardDoneMessage const&) ), this, SLOT( childCardDone(bb::system::CardDoneMessage const&) ) );
 		break;
 
     case ApplicationStartupMode::InvokeApplication:
@@ -67,6 +68,10 @@ void ApplicationUI::invoked(bb::system::InvokeRequest const& request)
 
 void ApplicationUI::initRoot(QString const& qmlDoc)
 {
+    QmlDocument* qml = QmlDocument::create("asset:///NotificationToast.qml").parent(this);
+    QObject* toast = qml->createRootObject<QObject>();
+    QmlDocument::defaultDeclarativeEngine()->rootContext()->setContextProperty("tutorialToast", toast);
+
     QMap<QString, QObject*> context;
     context.insert("localizer", &m_locale);
 
@@ -107,10 +112,6 @@ void ApplicationUI::lazyInit()
             m_root->setProperty("message", map);
         }
     }
-
-    QmlDocument* qml = QmlDocument::create("asset:///NotificationToast.qml").parent(this);
-    QObject* toast = qml->createRootObject<QObject>();
-    QmlDocument::defaultDeclarativeEngine()->rootContext()->setContextProperty("tutorialToast", toast);
 
     emit lazyInitComplete();
 }
