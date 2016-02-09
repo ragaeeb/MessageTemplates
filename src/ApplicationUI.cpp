@@ -194,8 +194,21 @@ void ApplicationUI::processReply(qint64 accountId, QVariantMap const& message, Q
 
     templateBody = templateBody.trimmed();
 
-	if (accountId == ACCOUNT_KEY_SMS) {
-		PimUtil::replyToSMS( message.value("senderAddress").toString(), templateBody, m_invokeManager );
+	if (accountId == ACCOUNT_KEY_SMS)
+	{
+	    bb::system::InvokeRequest request;
+	    request.setTarget("sys.pim.text_messaging.composer");
+	    request.setAction("bb.action.COMPOSE");
+	    request.setMimeType("application/text_messaging");
+
+	    QVariantMap data;
+	    data["to"] = QVariantList() << message.value("senderAddress").toString();
+	    data["send"] = false;
+	    data["body"] = templateBody;
+	    request.setData( bb::PpsObject::encode(data) );
+
+	    m_invokeManager.invoke(request);
+
 	} else {
         m_persistance.copyToClipboard(templateBody, false);
 
@@ -209,7 +222,12 @@ void ApplicationUI::processReply(qint64 accountId, QVariantMap const& message, Q
             }
         }
 
-		InvocationUtils::replyToMessage( accountId, message.value("id").toString(), m_invokeManager );
+        bb::system::InvokeRequest request;
+        request.setAction("bb.action.REPLY");
+        request.setMimeType("message/rfc822");
+        request.setUri( QString("pim:message/rfc822:%1:%2").arg(accountId).arg( message.value("id").toString() ) );
+
+        m_invokeManager.invoke(request);
 	}
 }
 
